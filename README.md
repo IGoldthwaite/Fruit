@@ -3,4 +3,4 @@ Fruit Image Classifier
 
 Required Before Running
 * Python 2.7
-  * libraries: numpy, scipy, pickle, pillow
+  * libraries: numpy, scipy, pickle, pillow, opencv
