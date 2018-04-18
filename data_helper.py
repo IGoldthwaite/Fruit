@@ -12,14 +12,22 @@ DEBUG = 3
 TRAIN_DATA_DIRECTORY = './data/Training/'
 TEST_DATA_DIRECTORY = './data/Validation/'
 
-def load_data(train):
+def load_data(train, class_limit=-1):
 
     print 'loading training data' if train else 'loading test data'
     directory = TRAIN_DATA_DIRECTORY if train else TEST_DATA_DIRECTORY
     X = []
     y = [] 
     skip_first = True 
+
+    class_count = 0
+
     for temp in os.walk(directory):
+
+        if class_limit > 0 and class_count > class_limit:
+            break
+        else:
+            class_count += 1
 
         # we don't want this first entry
         if skip_first:
@@ -38,12 +46,18 @@ def load_data(train):
             real_dir = os.path.join(directory, class_name, file_name)
             image = cv2.imread(real_dir, cv2.IMREAD_COLOR)
             image = cv2.resize(image, (45, 45))
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            
+            # commenting this out allows us to reconstruct images by simply reshaping
+            #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            
             image = image.flatten()
             X.append(image)
             y.append(class_name)
 
     class_id_map = {v:i for i,v in enumerate(np.unique(y))}
+
+    X = np.array(X)
+    y = np.array(y)
 
     if DEBUG > 2:
         print ''

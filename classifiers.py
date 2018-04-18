@@ -5,6 +5,7 @@ Classifiers go here.
 import os, sys
 import numpy as np
 import random
+from scipy import stats
 
 DEBUG = 2
 
@@ -22,59 +23,64 @@ class SomeOtherClassifier():
     def predict(X, Y=None):
         return [0 for i in X]
 
-class LMSKernelClassifier():
+
+class KMeansClassifier():
     '''
-    Attempt to duplicate the homework 2 matlab code I wrote.
+    Basic k-means classifier implementation.
     '''
 
-    def __init__(self, kernel='Gaussian', bandwidths=[1e2], lambds=[1e-4]):
-        self.kernel = kernel
-        self.bandwidths = bandwidths
-        self.ls = lambds
-        self.train_data = None
-        self.K = None
-        self.A = None
+    def __init__(self, k):
+        self.k = k
+        self.centers = None
+        self.center_labels = None
 
     def train(self, X, Y):
-        '''
-        Train on the data in X and labels in Y.
-        '''
+
+        # initialize classifier variables
+        num_features = len(X[0])
+        pre_centers = -1*np.random.rand(self.k, num_features) 
+        self.centers = 255*np.random.rand(self.k, num_features)
+        self.center_labels = np.zeros(self.k, dtype=np.int)
+        converged = False
+
+        # send out clusters
+        while not converged:
+
+            # assign vectors and labels to centers
+            kassignments = [[] for _ in self.centers]
+            lassignments = [[] for _ in self.centers]
+            for vi in range(len(X)):
+                dists = [np.linalg.norm(X[vi]-c) for c in self.centers]
+                kassignments[np.argmin(dists)].append(X[vi])
+                lassignments[np.argmin(dists)].append(Y[vi])
+
+            print [len(x) for x in kassignments]
+
+            # if no points assigned, re-randomize those centers
+            for cli in range(len(kassignments)):
+                if len(kassignments[cli]) == 0:
+                    self.centers[cli] = X[np.random.choice(range(len(X)))] 
+                    #self.centers = 255*np.random.rand(self.k, num_features)
+                    #break
+                else:
+                    self.centers[cli] = np.average(kassignments[cli], axis=0)
+
+            if (pre_centers == self.centers).all():
+                converged = True
+            else:
+                # re-cast here to copy array, not reference
+                pre_centers = np.array(self.centers)
+
+        # assign clusters labels
+        self.center_labels = [stats.mode(x)[0][0] for x in lassignments]
         
-        self.train_data = np.array(X)
+    def predict(self, X, Y=None):
 
-        train_ixs = random.sample([i for i in range(len(self.train_data))], 0.5*len(self.train_data))
-        test_ixs = [i for i in range(len(self.train_data)) if i not in train_ixs]
+        predictions = []
+        for vi in range(len(X)):
+            dists = [np.linalg.norm(X[vi]-c) for c in self.centers]
+            predictions.append(self.center_labels[np.argmin(dists)])
 
-        # split into cross-validation train/test
-        train_split = self.train_data[train_ixs]
-        train_labels = np.array(Y)[train_ixs]
-        test_split = self.train_data[test_ixs]
-        test_labels = np.array(Y)[test_ixs]
-
-        error_score = np.zeros(len(self.bandwidths) * len(self.ls))
-
-        cv_count = 0
-        for l in self.ls:
-            for b in self.bandwidths:
-                
-                cv_count += 1
-                if DEBUG > 1:
-                    sys.stdout.write('\rcross-validating {} of {}... '.format(cv_count, len(error_score)))
-
-                if self.kernel == 'Gaussian':
-
-                    # calculate K matrix
-                    self.K = np.zeros((len(train_split), len(train_split)))
-                    for i in range(len(train_split)):
-                        
-                        if DEBUG > 1:
-                            sys.stdout.write('{}'.format(i))
-                            sys.stdout.flush()
-                        
-                        self.K[i,:] = np.exp(-1*(np.sqrt(np.sum(train_split[i,:] - train_split)**2)**2) / (b**2))
-
-                    # find least-squares solution A
-                    self.A = np.linalg.inv(self.K + l*np.identity(len(train_split)))*train_labels
+        return predictions
 
 
-                    # just realized this isn't really applicable to our dataset so I'm going to stop here lol.
