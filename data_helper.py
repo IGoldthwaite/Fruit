@@ -76,4 +76,4 @@ def print_accuracy(predictions, labels):
         else:
             num_correct += 1
     print '{} of {} correct'.format(num_correct, num_correct+num_error)
-    print 'Accuracy: {}%'.format((num_correct*100)/(num_correct+num_error))
+    print 'Accuracy: {}%'.format(float(num_correct*100)/float(num_correct+num_error))

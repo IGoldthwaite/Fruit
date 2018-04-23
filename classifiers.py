@@ -54,8 +54,6 @@ class KMeansClassifier():
                 kassignments[np.argmin(dists)].append(X[vi])
                 lassignments[np.argmin(dists)].append(Y[vi])
 
-            print [len(x) for x in kassignments]
-
             # if no points assigned, re-randomize those centers
             for cli in range(len(kassignments)):
                 if len(kassignments[cli]) == 0:
