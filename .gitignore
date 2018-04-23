@@ -1,5 +1,6 @@
 # Our local data files (they won't change)
 data/
+figures/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

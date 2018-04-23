@@ -66,3 +66,14 @@ def load_data(train, class_limit=-1):
         print '\t{} data entries\n'.format(len(X))
 
     return X, y
+
+def print_accuracy(predictions, labels):
+    num_correct = 0
+    num_error = 0
+    for pi in range(len(predictions)):
+        if predictions[pi] != labels[pi]:
+            num_error += 1
+        else:
+            num_correct += 1
+    print '{} of {} correct'.format(num_correct, num_correct+num_error)
+    print 'Accuracy: {}%'.format((num_correct*100)/(num_correct+num_error))

@@ -2,7 +2,8 @@
 Main script to load and run data on our classifiers.
 '''
 
-
+import matplotlib
+matplotlib.use('Agg')
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,8 +11,17 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from classifiers import KMeansClassifier
 from data_helper import load_data
+from data_helper import print_accuracy
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
 
+def main_random_forest_test():    
+    train_data, train_labels = load_data(True, -1)
+    test_data, test_labels = load_data(False, -1)
+    forest = RandomForestClassifier(n_estimators=10)
+    forest = forest.fit(train_data, train_labels)
+    predictions = forest.predict(test_data)
+    print_accuracy(predictions, test_labels)
 
 def main_combination_test():
 
@@ -38,19 +48,11 @@ def main_combination_test():
     p_vals = kmclf.predict(pca_test)
     predictions = [val_to_label[p] for p in p_vals]
     
-    num_correct = 0
-    num_error = 0
-    for pi in range(len(predictions)):
-        if predictions[pi] != test_labels[pi]:
-            num_error += 1
-        else:
-            num_correct += 1
-
-    print '{} of {} correct'.format(num_correct, num_correct+num_error)
+    print_accuracy(predictions, test_labels)
 
 def main_kmeans_test():
 
-    num_classes = 3
+    num_classes = 60
     train_data, train_labels = load_data(True, num_classes)
     
     # make things a bit easier for us
@@ -72,15 +74,7 @@ def main_kmeans_test():
     p_vals = kmclf.predict(test_data)
     predictions = [val_to_label[p] for p in p_vals]
 
-    num_correct = 0
-    num_error = 0
-    for pi in range(len(predictions)):
-        if predictions[pi] != test_labels[pi]:
-            num_error += 1
-        else:
-            num_correct += 1
-
-    print '{} of {} correct'.format(num_correct, num_correct+num_error)
+    print_accuracy(predictions, test_labels)
 
 
 def main_pcatest():
@@ -101,7 +95,7 @@ def main_pcatest():
     for cl in pca_by_class:
         ax.scatter(pca_by_class[cl].T[0], pca_by_class[cl].T[1], pca_by_class[cl].T[2]) 
 
-    plt.show()
+    plt.savefig('figures/pca.png')
 
 def main():
     #train_data, train_labels = load_data(True)
@@ -111,7 +105,6 @@ def main():
     print test_labels
     print len(test_data)
     print len(test_data[0])
-
 
     img = test_data[0].reshape((45, 45, 3))
     print test_labels[0]
@@ -123,4 +116,5 @@ if __name__ == '__main__':
 #    main()
 #    main_pcatest()
 #    main_kmeans_test()
-    main_combination_test()
+#    main_combination_test()
+    main_random_forest_test()
