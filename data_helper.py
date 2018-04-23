@@ -2,11 +2,18 @@
 File to handle data manipulation utility functions.
 Ex train/test splits and other stuff.
 '''
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D 
 
 import os, sys
 import numpy as np
 import pickle
 import cv2
+
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 DEBUG = 3 
 TRAIN_DATA_DIRECTORY = './data/Training/'
@@ -66,6 +73,37 @@ def load_data(train, class_limit=-1):
         print '\t{} data entries\n'.format(len(X))
 
     return X, y
+
+def apply_pca(train_data, test_data, dimensions):
+    scaler = StandardScaler()
+    train_data_scaled = scaler.fit_transform(train_data)
+    test_data_scaled = scaler.transform(test_data)
+    pcadecomp = PCA(n_components=dimensions)
+    pca_train = pcadecomp.fit_transform(train_data_scaled)
+    pca_test = pcadecomp.transform(test_data_scaled)
+    return pca_train, pca_test
+
+def plot_pca(data, labels):
+    print 'Plotting PCA in 3 dimensions'
+    
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data)
+    pcadecomp = PCA(n_components=3)
+    pca_data = pcadecomp.fit_transform(data_scaled)
+    pca_data = np.array(pca_data)
+
+    classes = list(set(labels))
+    pca_by_class = {} 
+    for cl in classes:
+        pca_by_class[cl] = np.array([pca_data[i] for i in range(len(pca_data)) if labels[i] == cl])
+    
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    for cl in pca_by_class:
+        ax.scatter(pca_by_class[cl].T[0], pca_by_class[cl].T[1], pca_by_class[cl].T[2]) 
+
+    print 'Saving PCA results to figures/pca.png'
+    plt.savefig('figures/pca.png')
 
 def print_accuracy(predictions, labels):
     num_correct = 0

@@ -2,89 +2,60 @@
 Main script to load and run data on our classifiers.
 '''
 
-import matplotlib
-matplotlib.use('Agg')
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D 
 
 from classifiers import KMeansClassifier
 from data_helper import load_data
 from data_helper import print_accuracy
+from data_helper import apply_pca
+from data_helper import plot_pca
 
-from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn import svm
 
-def main_svm_test(train_data, train_labels, test_data, test_labels):
-    print 'Training SVM'
+def classify_svm(train_data, train_labels, test_data, test_labels, using_pca = False):
+    print 'Training SVM' + (' with PCA' if using_pca else '')
     svm_classifier = svm.SVC()
     svm_classifier = svm_classifier.fit(train_data, train_labels)
-    print 'Testing SVM' 
+    print 'Testing SVM' + (' with PCA' if using_pca else '')
     predictions = svm_classifier.predict(test_data)
     print_accuracy(predictions, test_labels)
 
-def main_naive_bayes_test(train_data, train_labels, test_data, test_labels):    
-    print 'Training Naive Bayes'
+def classify_naive_bayes(train_data, train_labels, test_data, test_labels, using_pca = False):    
+    print 'Training Naive Bayes' + (' with PCA' if using_pca else '')
     nb = GaussianNB().fit(train_data, train_labels)
-    print 'Testing Naive Bayes'
+    print 'Testing Naive Bayes' + (' with PCA' if using_pca else '')
     predictions = nb.predict(test_data)
     print_accuracy(predictions, test_labels)
 
-def main_knn_test(train_data, train_labels, test_data, test_labels, k):    
-    print 'Training {}-NN'.format(k)
+def classify_knn(train_data, train_labels, test_data, test_labels, k, using_pca = False):    
+    print 'Training {}-NN'.format(k) + (' with PCA' if using_pca else '')
     knn = KNeighborsClassifier(n_neighbors = k).fit(train_data, train_labels)
-    print 'Testing {}-NN'.format(k)
+    print 'Testing {}-NN'.format(k) + (' with PCA' if using_pca else '')
     predictions = knn.predict(test_data)
     print_accuracy(predictions, test_labels)
 
-def main_decision_tree_test(train_data, train_labels, test_data, test_labels, depth):    
-    print 'Training Decision Tree'
+def classify_decision_tree(train_data, train_labels, test_data, test_labels, depth, using_pca = False):    
+    print 'Training Decision Tree' + (' with PCA' if using_pca else '')
     tree = DecisionTreeClassifier(max_depth = depth).fit(train_data, train_labels)
-    print 'Testing Decision Tree'
+    print 'Testing Decision Tree' + (' with PCA' if using_pca else '')
     predictions = tree.predict(test_data)
     print_accuracy(predictions, test_labels)
 
-def main_random_forest_test(train_data, train_labels, test_data, test_labels, estimators):    
-    print 'Training Random Forest'
+def classify_random_forest(train_data, train_labels, test_data, test_labels, estimators, using_pca = False):    
+    print 'Training Random Forest' + (' with PCA' if using_pca else '')
     forest = RandomForestClassifier(n_estimators=estimators)
     forest = forest.fit(train_data, train_labels)
-    print 'Testing Random Forest'
+    print 'Testing Random Forest' + (' with PCA' if using_pca else '')
     predictions = forest.predict(test_data)
     print_accuracy(predictions, test_labels)
 
-def main_combination_test(train_data, train_labels, test_data, test_labels, dimensions, num_classes):
-    print 'Training PCA/KMeans Combination'
-    
-    pcadecomp = PCA(n_components=dimensions)
-    pca_train = pcadecomp.fit_transform(train_data)
-    pca_test = pcadecomp.transform(test_data)
-
-    label_to_val = {}
-    val_to_label = {}
-    ix = 0
-    for cl in list(set(train_labels)):
-        label_to_val[cl] = ix
-        val_to_label[ix] = cl
-        ix += 1
-
-    train_values = np.array([label_to_val[s] for s in train_labels])
-
-    kmclf = KMeansClassifier(num_classes*2)
-    kmclf.train(pca_train, train_values)
-
-    print 'Testing PCA/KMeans Combination'
-    p_vals = kmclf.predict(pca_test)
-    predictions = [val_to_label[p] for p in p_vals]
-    
-    print_accuracy(predictions, test_labels)
-
-def main_kmeans_test(train_data, train_labels, test_data, test_labels, num_classes):
-    print 'Training KMeans'
+def classify_kmeans(train_data, train_labels, test_data, test_labels, num_classes, using_pca = False):
+    print 'Training KMeans' + (' with PCA' if using_pca else '')
     
     # make things a bit easier for us
     label_to_val = {}
@@ -101,47 +72,35 @@ def main_kmeans_test(train_data, train_labels, test_data, test_labels, num_class
     kmclf = KMeansClassifier(num_classes*2)
     kmclf.train(train_data, train_values)
     
-    print 'Testing KMeans'
+    print 'Testing KMeans' + (' with PCA' if using_pca else '')
     p_vals = kmclf.predict(test_data)
     predictions = [val_to_label[p] for p in p_vals]
 
     print_accuracy(predictions, test_labels)
-
-
-def main_pcatest(data, labels, dimensions):
-    print 'Applying PCA'
-
-    pcadecomp = PCA(n_components=dimensions)
-    pca_data = pcadecomp.fit_transform(data)
-    pca_data = np.array(pca_data)
-
-    classes = list(set(labels))
-    pca_by_class = {} 
-    for cl in classes:
-        pca_by_class[cl] = np.array([pca_data[i] for i in range(len(pca_data)) if labels[i] == cl])
-    
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    for cl in pca_by_class:
-        ax.scatter(pca_by_class[cl].T[0], pca_by_class[cl].T[1], pca_by_class[cl].T[2]) 
-
-    print 'Saving PCA results to figures/pca.png'
-    plt.savefig('figures/pca.png')
 
 def main():
     # Load data once
     train_data, train_labels = load_data(True)
     test_data, test_labels = load_data(False)
 
-    # Run classifiers
-    #main_pcatest(test_data, test_labels, 3)
-    #main_kmeans_test(train_data, train_labels, test_data, test_labels, 60)
-    #main_combination_test(train_data, train_labels, test_data, test_labels, 5, 60)
-    main_random_forest_test(train_data, train_labels, test_data, test_labels, 10)
-    #main_decision_tree_test(train_data, train_labels, test_data, test_labels, 2)
-    #main_knn_test(train_data, train_labels, test_data, test_labels, 3)
-    #main_naive_bayes_test(train_data, train_labels, test_data, test_labels)
-    #main_svm_test(train_data, train_labels, test_data, test_labels)
+    # Plot PCA in 3 dimensions
+    #plot_pca(test_data, test_labels)
+
+    # Apply PCA to data
+    train_data_pca, test_data_pca = apply_pca(train_data, test_data, 50)
+
+    #classify_kmeans(train_data, train_labels, test_data, test_labels, 60)
+    #classify_kmeans(train_data_pca, train_labels, test_data_pca, test_labels, 60, True)
+    classify_random_forest(train_data, train_labels, test_data, test_labels, 10)
+    classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
+    classify_decision_tree(train_data, train_labels, test_data, test_labels, 10)
+    classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
+    #classify_knn(train_data, train_labels, test_data, test_labels, 3)
+    #classify_knn(train_data_pca, train_labels, test_data_pca, test_labels, 3, True)
+    #classify_naive_bayes(train_data, train_labels, test_data, test_labels)
+    #classify_naive_bayes(train_data_pca, train_labels, test_data_pca, test_labels, True)
+    #classify_svm(train_data_pca, train_labels, test_data_pca, test_labels, True)
+    #classify_svm(train_data, train_labels, test_data, test_labels)
 
 if __name__ == '__main__':
     main()
