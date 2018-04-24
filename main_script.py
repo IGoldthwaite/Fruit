@@ -40,9 +40,9 @@ def classify_knn(train_data, train_labels, test_data, test_labels, k, using_pca 
     print_accuracy(predictions, test_labels)
 
 def classify_decision_tree(train_data, train_labels, test_data, test_labels, depth, using_pca = False):    
-    print 'Training Decision Tree ({} max_depth)'.format(estimators) + (' with PCA' if using_pca else '')
+    print 'Training Decision Tree ({} max_depth)'.format(depth) + (' with PCA' if using_pca else '')
     tree = DecisionTreeClassifier(max_depth = depth).fit(train_data, train_labels)
-    print 'Testing Decision Tree ({} max_depth)'.format(estimators) + (' with PCA' if using_pca else '')
+    print 'Testing Decision Tree ({} max_depth)'.format(depth) + (' with PCA' if using_pca else '')
     predictions = tree.predict(test_data)
     print_accuracy(predictions, test_labels)
 
@@ -94,11 +94,13 @@ def main():
     #    classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
     #    classify_random_forest(train_data, train_labels, test_data, test_labels, i)
 
-    for i in [2, 5, 10, 25, 50, 100]:
-        classify_decision_tree(train_data, train_labels, test_data, test_labels, i)
-        classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
-    #classify_knn(train_data, train_labels, test_data, test_labels, 3)
-    #classify_knn(train_data_pca, train_labels, test_data_pca, test_labels, 3, True)
+    #for i in [2, 5, 10, 25, 50, 100]:
+    #    classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
+    #    classify_decision_tree(train_data, train_labels, test_data, test_labels, i)
+
+    for i in [3, 5, 7]:
+        classify_knn(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
+        classify_knn(train_data, train_labels, test_data, test_labels, i)
     #classify_naive_bayes(train_data, train_labels, test_data, test_labels)
     #classify_naive_bayes(train_data_pca, train_labels, test_data_pca, test_labels, True)
     #classify_svm(train_data_pca, train_labels, test_data_pca, test_labels, True)

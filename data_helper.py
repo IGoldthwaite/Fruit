@@ -75,12 +75,14 @@ def load_data(train, class_limit=-1):
     return X, y
 
 def apply_pca(train_data, test_data, dimensions):
+    print 'Plotting PCA in {} dimensions'.format(dimensions)
     scaler = StandardScaler()
     train_data_scaled = scaler.fit_transform(train_data)
     test_data_scaled = scaler.transform(test_data)
     pcadecomp = PCA(n_components=dimensions)
     pca_train = pcadecomp.fit_transform(train_data_scaled)
     pca_test = pcadecomp.transform(test_data_scaled)
+    print 'Done'
     return pca_train, pca_test
 
 def plot_pca(data, labels):
