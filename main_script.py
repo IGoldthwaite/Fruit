@@ -40,17 +40,17 @@ def classify_knn(train_data, train_labels, test_data, test_labels, k, using_pca 
     print_accuracy(predictions, test_labels)
 
 def classify_decision_tree(train_data, train_labels, test_data, test_labels, depth, using_pca = False):    
-    print 'Training Decision Tree' + (' with PCA' if using_pca else '')
+    print 'Training Decision Tree ({} max_depth)'.format(estimators) + (' with PCA' if using_pca else '')
     tree = DecisionTreeClassifier(max_depth = depth).fit(train_data, train_labels)
-    print 'Testing Decision Tree' + (' with PCA' if using_pca else '')
+    print 'Testing Decision Tree ({} max_depth)'.format(estimators) + (' with PCA' if using_pca else '')
     predictions = tree.predict(test_data)
     print_accuracy(predictions, test_labels)
 
 def classify_random_forest(train_data, train_labels, test_data, test_labels, estimators, using_pca = False):    
-    print 'Training Random Forest ({} classifiers)'.format(estimators) + (' with PCA' if using_pca else '')
+    print 'Training Random Forest ({} estimators)'.format(estimators) + (' with PCA' if using_pca else '')
     forest = RandomForestClassifier(n_estimators=estimators)
     forest = forest.fit(train_data, train_labels)
-    print 'Testing Random Forest ({} classifiers)'.format(estimators) + (' with PCA' if using_pca else '')
+    print 'Testing Random Forest ({} estimators)'.format(estimators) + (' with PCA' if using_pca else '')
     predictions = forest.predict(test_data)
     print_accuracy(predictions, test_labels)
 
@@ -90,11 +90,13 @@ def main():
     train_data_pca, test_data_pca = apply_pca(train_data, test_data, 50)
 
     # Start classifying
+    #for i in [2, 5, 10, 25, 50, 100]:
+    #    classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
+    #    classify_random_forest(train_data, train_labels, test_data, test_labels, i)
+
     for i in [2, 5, 10, 25, 50, 100]:
-        classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
-        classify_random_forest(train_data, train_labels, test_data, test_labels, i)
-    #classify_decision_tree(train_data, train_labels, test_data, test_labels, 10)
-    #classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
+        classify_decision_tree(train_data, train_labels, test_data, test_labels, i)
+        classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
     #classify_knn(train_data, train_labels, test_data, test_labels, 3)
     #classify_knn(train_data_pca, train_labels, test_data_pca, test_labels, 3, True)
     #classify_naive_bayes(train_data, train_labels, test_data, test_labels)
