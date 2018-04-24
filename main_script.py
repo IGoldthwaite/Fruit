@@ -47,10 +47,10 @@ def classify_decision_tree(train_data, train_labels, test_data, test_labels, dep
     print_accuracy(predictions, test_labels)
 
 def classify_random_forest(train_data, train_labels, test_data, test_labels, estimators, using_pca = False):    
-    print 'Training Random Forest' + (' with PCA' if using_pca else '')
+    print 'Training Random Forest ({} classifiers)'.format(estimators) + (' with PCA' if using_pca else '')
     forest = RandomForestClassifier(n_estimators=estimators)
     forest = forest.fit(train_data, train_labels)
-    print 'Testing Random Forest' + (' with PCA' if using_pca else '')
+    print 'Testing Random Forest ({} classifiers)'.format(estimators) + (' with PCA' if using_pca else '')
     predictions = forest.predict(test_data)
     print_accuracy(predictions, test_labels)
 
@@ -89,18 +89,20 @@ def main():
     # Apply PCA to data
     train_data_pca, test_data_pca = apply_pca(train_data, test_data, 50)
 
-    #classify_kmeans(train_data, train_labels, test_data, test_labels, 60)
-    #classify_kmeans(train_data_pca, train_labels, test_data_pca, test_labels, 60, True)
-    classify_random_forest(train_data, train_labels, test_data, test_labels, 10)
-    classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
-    classify_decision_tree(train_data, train_labels, test_data, test_labels, 10)
-    classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
+    # Start classifying
+    for i in [2, 5, 10, 25, 50, 100]:
+        classify_random_forest(train_data_pca, train_labels, test_data_pca, test_labels, i, True)
+        classify_random_forest(train_data, train_labels, test_data, test_labels, i)
+    #classify_decision_tree(train_data, train_labels, test_data, test_labels, 10)
+    #classify_decision_tree(train_data_pca, train_labels, test_data_pca, test_labels, 10, True)
     #classify_knn(train_data, train_labels, test_data, test_labels, 3)
     #classify_knn(train_data_pca, train_labels, test_data_pca, test_labels, 3, True)
     #classify_naive_bayes(train_data, train_labels, test_data, test_labels)
     #classify_naive_bayes(train_data_pca, train_labels, test_data_pca, test_labels, True)
     #classify_svm(train_data_pca, train_labels, test_data_pca, test_labels, True)
     #classify_svm(train_data, train_labels, test_data, test_labels)
+    #classify_kmeans(train_data, train_labels, test_data, test_labels, 60)
+    #classify_kmeans(train_data_pca, train_labels, test_data_pca, test_labels, 60, True)
 
 if __name__ == '__main__':
     main()
