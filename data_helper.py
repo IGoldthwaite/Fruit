@@ -13,7 +13,6 @@ import pickle
 import cv2
 
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
 DEBUG = 3 
 TRAIN_DATA_DIRECTORY = './data/Training/'
@@ -75,23 +74,17 @@ def load_data(train, class_limit=-1):
     return X, y
 
 def apply_pca(train_data, test_data, dimensions):
-    print 'Plotting PCA in {} dimensions'.format(dimensions)
-    scaler = StandardScaler()
-    train_data_scaled = scaler.fit_transform(train_data)
-    test_data_scaled = scaler.transform(test_data)
+    print 'Applying PCA in {} dimensions'.format(dimensions)
     pcadecomp = PCA(n_components=dimensions)
-    pca_train = pcadecomp.fit_transform(train_data_scaled)
-    pca_test = pcadecomp.transform(test_data_scaled)
+    pca_train = pcadecomp.fit_transform(train_data)
+    pca_test = pcadecomp.transform(test_data)
     print 'Done'
     return pca_train, pca_test
 
 def plot_pca(data, labels):
     print 'Plotting PCA in 3 dimensions'
-    
-    scaler = StandardScaler()
-    data_scaled = scaler.fit_transform(data)
     pcadecomp = PCA(n_components=3)
-    pca_data = pcadecomp.fit_transform(data_scaled)
+    pca_data = pcadecomp.fit_transform(data)
     pca_data = np.array(pca_data)
 
     classes = list(set(labels))
